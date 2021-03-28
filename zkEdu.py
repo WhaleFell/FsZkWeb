@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-03-28 10:53:17
+LastEditTime: 2021-03-28 10:58:42
 Description: 中考报名网站
 '''
 import base64
@@ -403,8 +403,8 @@ def main(userid, pwd):
 
 if __name__ == "__main__":
 
-    # userid = "21060515080613"
-    # pwd = "@lovehyy123456"
+    # userid = "21060515080101"
+    # pwd = "@lov23456"
     # main(userid, pwd)
 
 
