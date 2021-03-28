@@ -1,7 +1,7 @@
 <!--
  * @Author: whalefall
  * @Date: 2021-03-28 09:49:05
- * @LastEditTime: 2021-03-28 09:57:44
+ * @LastEditTime: 2021-03-28 10:06:25
  * @Description: 佛山中考逆向
 -->
 # 前言
@@ -9,6 +9,12 @@
     > **网址** :[https://exam.edu.foshan.gov.cn/iexamfs/](https://exam.edu.foshan.gov.cn/iexamfs/)
 2. 主页面:
     ![佛山中考信息管理系统.png](https://i.loli.net/2021/03/28/CAmoDO3BpewNYGW.png)
+3. **依赖库** 安装:
+```shell
+pipreqs --encoding utf8 ./ # 导出
+pip3 install -r requirements.txt # 安装
+```
+
 -----
 # 具体实现
 > **暂时咕咕咕!!!** 请看[主程序](zkEdu.py)
