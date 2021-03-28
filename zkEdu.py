@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-03-28 10:50:58
+LastEditTime: 2021-03-28 10:53:17
 Description: 中考报名网站
 '''
 import base64
@@ -67,11 +67,11 @@ class Zkweb:
             "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
         }
-        self.sessions = requests.session() # 带cookies的请求
+        self.sessions = requests.session()  # 带cookies的请求
 
-        self.code = None # 验证码内容   
+        self.code = None  # 验证码内容
         self.index_url = None
-        self.count = 0 # 失败计数
+        self.count = 0  # 失败计数
 
     # 获取验证码地址
     def getCode(self):
@@ -407,17 +407,18 @@ if __name__ == "__main__":
     # pwd = "@lovehyy123456"
     # main(userid, pwd)
 
-    # lock = threading.Lock()
 
     # 构造考号:2106051508|0613
 
+    # 多进程
     # import multiprocessing
     # pool = multiprocessing.Pool(processes=3)
 
     for classId in range(1, 12):
         for i in range(1, 52):
-
-            if i == 13:
+            
+            # 女朋友的班级学号 不要搞她
+            if i == 13 and classId == 6:
                 continue
 
             # pool.apply_async(func=main, args=(
@@ -427,4 +428,4 @@ if __name__ == "__main__":
     # pool.close()
     # pool.join()
 
-    print("main")
+    print("执行完毕!")
