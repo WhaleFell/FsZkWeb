@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-03-28 09:15:12
+LastEditTime: 2021-03-28 10:50:58
 Description: 中考报名网站
 '''
 import base64
@@ -337,7 +337,7 @@ def main(userid, pwd):
 
     bot = Zkweb()
 
-    # userid = "21060515080613"
+    # userid = "21060515080713"
     # pwd = "@lovehyy123456"
 
     # for i in range(5):
