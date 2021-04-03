@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-04-03 11:04:17
+LastEditTime: 2021-04-03 11:45:22
 Description: 中考报名网站
 '''
 import base64
@@ -102,11 +102,7 @@ class Zkweb:
             pass
         else:
             try:
-                # self.key = random.randint(0, 99999999)
                 resp = self.sessions.get(code_url, headers=self.header)
-                # with open(r"C:\Users\Administrator\Desktop\code\%s.jpg" % (self.key), mode="wb") as f:
-                #     f.write(resp)
-                # print("验证码已下载! KEY:%s" % (self.key))
 
                 # 验证码内容
                 self.code = resp.content
@@ -125,7 +121,8 @@ class Zkweb:
             # 两种验证码图片处理方法
 
             # image = self.delete_spot()
-            image = self.convert_Image()
+            # image = self.convert_Image()
+            image = self.dispose_code() # 效果最好的方案
 
             code = pytesseract.image_to_string(image)
             # 去掉非法字符，只保留字母数字
@@ -217,6 +214,53 @@ class Zkweb:
 
         # images.show()
         return images
+
+    # 美化验证码3 个人感觉效果最好的方案了
+    def dispose_code(self):
+
+        img = Image.open(BytesIO(self.code))
+
+        def binarizing(img, threshold):
+            """传入image对象进行灰度、二值处理"""
+            img = img.convert("L")  # 转灰度
+            pixdata = img.load()
+            w, h = img.size
+            # 遍历所有像素，大于阈值的为黑色
+            for y in range(h):
+                for x in range(w):
+                    if pixdata[x, y] < threshold:
+                        pixdata[x, y] = 0
+                    else:
+                        pixdata[x, y] = 255
+            return img
+            
+        img = binarizing(img, 225)
+        """传入二值化后的图片进行降噪"""
+        pixdata = img.load()
+        w, h = img.size
+        for y in range(1, h-1):
+            for x in range(1, w-1):
+                count = 0
+                if pixdata[x, y-1] > 245:  # 上
+                    count = count + 1
+                if pixdata[x, y+1] > 245:  # 下
+                    count = count + 1
+                if pixdata[x-1, y] > 245:  # 左
+                    count = count + 1
+                if pixdata[x+1, y] > 245:  # 右
+                    count = count + 1
+                if pixdata[x-1, y-1] > 245:  # 左上
+                    count = count + 1
+                if pixdata[x-1, y+1] > 245:  # 左下
+                    count = count + 1
+                if pixdata[x+1, y-1] > 245:  # 右上
+                    count = count + 1
+                if pixdata[x+1, y+1] > 245:  # 右下
+                    count = count + 1
+                if count > 4:
+                    pixdata[x, y] = 255
+        # img.show()
+        return img
 
     # 登录部分 并获取主页
     def login(self, code, userid, pwd):
@@ -385,6 +429,12 @@ def main(userid, pwd):
             i += 1
             print("----------------%s第%s次请求----------------" % (userid, i))
             code = bot.checkCode()
+            # 验证码识别有误时 跳出本次循环 减少对登录接口的请求次数
+
+            if code == False:
+                print("验证码识别(登陆前)错误!")
+                continue
+
             loginStatus = bot.login(code, userid, pwd)
 
             if loginStatus == "Error":
@@ -448,13 +498,10 @@ def main(userid, pwd):
 # %s
 ##################################        
         ''' % (userid, traceback.format_exc()))
-
-    # finally:
-    #     return "continue"
-
+        
 
 if __name__ == "__main__":
-    
+
     print('''
     ###############佛山中考报名网站##########################################
     # GitHub:https://github.com/AdminWhaleFall/FsZkWeb
@@ -468,7 +515,6 @@ if __name__ == "__main__":
 
     # time.sleep(2)
 
-
     try:
         UserList, checkTime = getConfig()
     except Exception as e:
@@ -478,7 +524,7 @@ if __name__ == "__main__":
     i = 0
     # 不间断循环
     while True:
-        
+
         # print("----------------------第%s次循环遍历!----------------------------" % (i))
 
         for userID in UserList:
@@ -490,45 +536,53 @@ if __name__ == "__main__":
                 print(userID, "已删除!")
                 print("剩余用户:%s" % (UserList))
 
-        
-
         if UserList == []:
             i += 1
             print("--------------第%s次循环遍历!已完成歇息中----------" % (i))
-            
+
             # 间接实现热重载
 
             UserList, checkTime = getConfig()
-            
+
             time.sleep(checkTime)
-            
+
+
 
 
     # 报废代码
-    
-    # userid = "21060515080101"
-    # pwd = "@lov23456"
-    # main(userid, pwd)
     # 构造考号:2106051508|0613
 
-    # 多进程部分
-    # import multiprocessing
-    # pool = multiprocessing.Pool(processes=5)
+    ''' 测试单次请求
+    # userid = "21060515080101"
+    # pwd = "@lov23456"
+    # bot = Zkweb()
+    # code = bot.checkCode()
+    # # 验证码识别有误时 跳出本次循环 减少对登录接口的请求次数
 
-    # # 通过遍历得到全校考号
+    # if code == False:
+    #     print("验证码识别(登陆前)错误!")
+    '''
 
-    # for classId in range(1, 12):
-    #     for i in range(1, 52):
 
-    #         # 女朋友的班级学号 不要搞她
-    #         if i == 13 and classId == 6:
-    #             continue
-
-    #         pool.apply_async(func=main, args=(
-    #             "2106051508%02d%02d" % (classId, i), "@A123456",))
-                
-    #         # main("2106051508%02d%02d" % (classId, i), "@A123456")
-
-    # pool.close()
-    # pool.join()
     
+    ''' 多进程部分
+    import multiprocessing
+    pool = multiprocessing.Pool(processes=5)
+
+    # 通过遍历得到全校考号
+
+    for classId in range(1, 12):
+        for i in range(1, 52):
+
+            # 女朋友的班级学号 不要搞她
+            if i == 13 and classId == 6:
+                continue
+
+            pool.apply_async(func=main, args=(
+                "2106051508%02d%02d" % (classId, i), "@A123456",))
+
+            # main("2106051508%02d%02d" % (classId, i), "@A123456")
+
+    pool.close()
+    pool.join()
+    '''
