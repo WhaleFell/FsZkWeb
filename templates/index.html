@@ -1,0 +1,144 @@
+<html>
+
+<head>
+	<title>招生考试信息管理平台</title>
+	<link rel="shortcut icon" href="https://exam.edu.foshan.gov.cn/iexamfs/resources/images/logo/favicon_blue32.ico">
+	<meta name="GUI" content="[morningstar],[招考组]">
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+	<script language="JavaScript">
+			function make_alpha(current, state) {
+				if (current.filters == undefined) { // Firefox
+					if (state == 0) {
+						current.style.MozOpacity = 0.60;
+					} else {
+						current.style.MozOpacity = 1;
+					}
+				} else { // IE
+					if (state == 0) {
+						current.filters.alpha.opacity = 60;
+					} else {
+						current.filters.alpha.opacity = 100;
+					}
+				}
+			}
+
+		function loadpage(current) {
+			if (current == 1) {
+				document.location.href = '/KsLoginAction.html';
+			} else if (current == 2) {
+				document.location.href = '/LoginAction.html';
+			}
+			else if (current == 4) {
+				document.location.href = '/iexam/foshan/register/main.do?back=T';
+			}
+		}
+	</script>
+</head>
+
+<body leftmargin="0" topmargin="0">
+	<table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td height="60" style="background:url(/static/image/index_top.jpg)" colspan="2">
+				<font style="letter-spacing:5;font-size:20pt;font-weight:bold;width:100%;color:#134F80;font-family:黑体;">
+					&nbsp;2021年佛山市中考信息管理系统</font>
+			</td>
+		</tr>
+		<tr>
+			<td height="20" style="background:url(/static/image/index_top_spt2.jpg)" colspan="2"></td>
+		</tr>
+
+		<tr>
+			<td colspan="2">
+				<table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0">
+					<tr>
+						<td valign="top" width="20%" height="100%"
+							style="background:url(/static/image/index_left_pl.gif)">
+							<table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0">
+								<tr height="28">
+									<td align="center" valign="top"
+										style="background:url(/static/image/index_left_ft1.jpg);width:100%;">
+										<font
+											style="font-size:10pt;width:100%;text-decoration:none;line-height:28px;color:white;font-family:华文中宋;">
+											常用帮助文件下载</font>
+									</td>
+								</tr>
+								<tr height="40">
+									<td valign="middle">
+									</td>
+								</tr>
+								<tr height="40">
+									<td valign="middle">
+									</td>
+								</tr>
+								<tr height="40">
+									<td valign="middle">
+									</td>
+								</tr>
+								<tr height="40">
+									<td valign="middle">
+									</td>
+								</tr>
+								<tr>
+									<td>&nbsp;</td>
+								</tr>
+							</table>
+						</td>
+
+						<td align="center" width="80%" height="100%" style="background:#DEEFF9">
+							<table>
+								<tr>
+									<td align="center" style="background:url(/static/image/index_mid.jpg)" width="726"
+										height="468" border="0">
+
+										<table border="0" width="100%" cellpadding="0" cellspacing="0">
+
+											<tr height="100">
+												<td style="padding-left:60px;FILTER:alpha(opacity=60);"
+													onmouseover='make_alpha(this,1)' onmouseout='make_alpha(this,0)'>
+													<img width="60" align="left"
+														src="/static/picture/index_button_ks.png" height="60">
+													<a href="/KsLoginAction.html">
+														<font
+															style="cursor:pointer;font-size:20pt;width:100%;line-height:60px;font-weight:bold;text-decoration:none;color:#134F80;font-family:华文中宋;">
+															考生用户请登录</font>
+													</a>
+												</td>
+											</tr>
+
+									
+
+
+											<tr height="100">
+												<td style="padding-left:60px;FILTER:alpha(opacity=60);"
+													onmouseover='make_alpha(this,1)' onmouseout='make_alpha(this,0)'>
+													<img width="60" align="left"
+														src="/static/picture/index_button_manager.png" height="60">
+													<a href="javascript:loadpage(2);">
+														<font
+															style="cursor:pointer;font-size:20pt;width:100%;line-height:60px;font-weight:bold;text-decoration:none;color:#134F80;font-family:华文中宋;">
+															管理用户请登录</font>
+													</a>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+					<tr>
+						<td height="50" style="background:url(/static/image/ft1.jpg)" colspan="2">
+							<img align="left" src="/static/picture/index_exit.jpg" height="50" border="0" alt=""
+								style="FILTER:" onclick="window.close()">
+							<img align="right" src="/static/picture/logo.jpg" height="50">
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+
+</html>

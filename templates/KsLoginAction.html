@@ -1,0 +1,183 @@
+<html>
+
+	<head>
+		<title>
+			2021年佛山市中考信息管理系统
+		</title>
+		<script type="text/javascript" src="/static/js/md5.js"></script>
+
+		<script type="text/javascript" src="/static/js/tripledes.js"></script>
+		<script type="text/javascript" src="/static/js/mode-ecb.js"></script>
+
+		<link rel="shortcut icon" href="https://exam.edu.foshan.gov.cn/iexamfs/resources/images/logo/favicon_blue32.ico">
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<style type="text/css">
+			.STYLE_TITLE {
+				text-align: center;
+				font-size: 36px;
+				color: #000000;
+				font-weight: bold;
+			}
+
+			.STYLE1 {
+				font-size: 12px;
+				color: #FFFFFF;
+			}
+
+			.STYLE2 {
+				text-align: right;
+				font-size: 14px;
+				color: Black;
+				font-weight: bold;
+			}
+
+			.button {
+				background-color: #AABEEA;
+				padding-top: 1px;
+				border: 1px ridge #5B7DC4;
+				border-left: #5B7DC4 1px solid;
+				border-right: #5B7DC4 1px solid;
+				border-top: #5B7DC4 1px solid;
+				border-bottom: #5B7DC4 1px solid;
+				height: 22px;
+				width: 70px;
+				font-size: 13px;
+				font-weight: bold;
+				color: #ffffff;
+				cursor: pointer;
+			}
+
+			-->
+
+			/*微信*/
+			.weixin img {
+				width:
+					150px;
+			}
+		</style>
+
+
+
+		<script language="JavaScript">
+
+		function changeValidateCode(obj) {
+			//获取当前的时间作为参数，无具体意义   
+			//每次请求需要一个不同的参数，否则可能会返回同样的验证码   
+			//这和浏览器的缓存机制有关系，也可以把页面设置为不缓存，这样就不用这个参数了。   
+			obj.src = "KsLoginSuccessAction!changeSerialno.action" + "?" + (new Date().getTime());
+		}
+		function retuenpage() {
+			document.location.href = '/';
+		}
+	</script>
+	</head>
+
+	<body bgcolor="#058FCD" cellpadding="0" cellspacing="0">
+		<!-- 提交表单部分 json编码格式-->
+		<form name="KsLoginMenuForm" action="/api/" method="POST" enctype='application/json'>
+			<table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" align="center" valign="middle">
+				<tr>
+					<td width="100" align="center">
+						<div class="weixin">
+							<img height="150" src="/static/picture/weixin.jpg">
+							<p>欢迎关注“佛山招考”微信公众号。</p>
+						</div>
+					</td>
+					<td align="center" valign="middle">
+						<table border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td colspan="3"><img src="/static/picture/login_students_top1.jpg" width="747" height="48" border="0"></td>
+							</tr>
+							<tr>
+								<td colspan="3" style="background:url(/static/image/login_students_top2.jpg)" width="747" height="150" border="0">
+									<font style="letter-spacing:8; padding-left:120px;padding-top:50px;margin:0px;valign:bottom;font-size:22pt;font-weight:bold;width:720;color:#FFFFFF;font-family:微软雅黑;">
+										&nbsp;
+										2021年佛山市中考信息管理系统</font>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3"><img src="/static/picture/login_students_top3.jpg" width="747" height="56" border="0"></td>
+							</tr>
+							<tr>
+								<td colspan="3" style="background:url(/static/image/login_students_top4.jpg)" width="747" height="205" border="0">
+									<table align="center">
+										<tr>
+											<td height="173" align="center">
+												<!--放登录框的内容-->
+												<!-- name是键 val是数值 -->
+												<table>
+													<tr>
+														<td>
+															<div class="STYLE2">
+																<select>
+																	<option>考生号</option>
+																</select>：
+															</div>
+														</td>
+														
+														<!-- 考号 -->
+														<td align="left">
+															<input type="text" width="200" name="userid" value="" style="width:180px">
+														</td>
+														<td rowspan="4">
+
+														</td>
+													</tr>
+													<tr>
+														<td>
+															<div class="STYLE2">密&nbsp;&nbsp;码 ：</div>
+														</td>
+														<!-- 密码 -->
+														<td align="left">
+															<input type="text" id="keyvalue" name="password" value=""
+															 style="width:180px">
+														</td>
+													</tr>
+
+													<!-- 验证码 -->
+													<!-- <tr>
+													<td>
+														<div class="STYLE2">验证码 ：</div>
+													</td>
+													<td align="left">
+														<input type="text" name="rand" value="" style="width:80px"
+															size="8">
+														<!-- <img src="https://exam.edu.foshan.gov.cn/iexamfs/serialno.bmp?time=1617459845394"
+															onclick="changeValidateCode(this)" title="点击图片刷新验证码"> -->
+													<!-- <img src="https://exam.edu.foshan.gov.cn/iexamfs/serialno.bmp?time=1617459845394"
+															title="点击图片刷新验证码">
+													</td>
+												</tr> -->
+
+													<tr>
+														<td align="center" colspan="2">
+															<!-- 登录按钮 -->
+															<!-- <input type="submit" value="提交" /> -->
+															<input src="/static/picture/index_button_dl.png" type="image" width="62" height="27" style="cursor:pointer;" onClick="document.formName.submit()">
+															&nbsp;&nbsp;&nbsp;&nbsp;
+															<!-- 取消按钮 -->
+															<img src="/static/picture/index_button_qx.png" type="image" width="62" height="27" onclick="retuenpage();" style="cursor:pointer;">
+														</td>
+													</tr>
+													<tr>
+														<td align="center" height="20">&nbsp;</td>
+													</tr>
+												</table>
+												
+												<div style="text-align: center">
+													为了更好的体验效果，请使用chrome、火狐浏览器，其他浏览器请使用极速模式，不建议使用IE浏览器 中考考差了 二中跳下来吧
+												</div>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+
+	</body>
+
+</html>
