@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-03-28 12:38:33
+LastEditTime: 2021-04-03 11:04:17
 Description: 中考报名网站
 '''
 import base64
@@ -401,6 +401,7 @@ def main(userid, pwd):
                 ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
 
 # 锁定成功后的操作
+
 #                 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "result.txt"), mode="a") as txt:
 #                     txt.write('''
 # ################################
@@ -453,6 +454,7 @@ def main(userid, pwd):
 
 
 if __name__ == "__main__":
+    
     print('''
     ###############佛山中考报名网站##########################################
     # GitHub:https://github.com/AdminWhaleFall/FsZkWeb
@@ -489,7 +491,6 @@ if __name__ == "__main__":
                 print("剩余用户:%s" % (UserList))
 
         
-        
 
         if UserList == []:
             i += 1
@@ -504,18 +505,17 @@ if __name__ == "__main__":
 
 
     # 报废代码
-    '''
+    
     # userid = "21060515080101"
     # pwd = "@lov23456"
     # main(userid, pwd)
-
     # 构造考号:2106051508|0613
 
-    # 多进程
+    # 多进程部分
     # import multiprocessing
-    # pool = multiprocessing.Pool(processes=3)
+    # pool = multiprocessing.Pool(processes=5)
 
-    # 通过遍历得到全校考号
+    # # 通过遍历得到全校考号
 
     # for classId in range(1, 12):
     #     for i in range(1, 52):
@@ -524,10 +524,11 @@ if __name__ == "__main__":
     #         if i == 13 and classId == 6:
     #             continue
 
-    #         # pool.apply_async(func=main, args=(
-    #         #     "2106051508%02d%02d" % (classId, i), "@A123456",))
-    #         main("2106051508%02d%02d" % (classId, i), "@A123456")
+    #         pool.apply_async(func=main, args=(
+    #             "2106051508%02d%02d" % (classId, i), "@A123456",))
+                
+    #         # main("2106051508%02d%02d" % (classId, i), "@A123456")
 
     # pool.close()
     # pool.join()
-    '''
+    
