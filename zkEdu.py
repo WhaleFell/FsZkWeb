@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-04-03 16:41:00
+LastEditTime: 2021-04-04 12:06:40
 Description: 中考报名网站
 '''
 import base64
@@ -319,7 +319,8 @@ class Zkweb:
                 # 获取主页加密
 
                 html = etree.HTML(resp.text)
-                self.index_url = html.xpath("/html/body/div[4]/a[2]/@href")[0]
+                # 更新获取主页 2021.4.4
+                self.index_url = html.xpath("/html/body/div[4]/a[1]/@href")[0]
                 print("主页链接:%s" % (self.index_url))
                 return True
 
@@ -583,15 +584,15 @@ if __name__ == "__main__":
     # 构造考号:2106051508|0613
 
     # 测试单次请求
-    # userid = "21060515080809"
-    # pwd = "@lov23456"
+    # userid = "21060515080613"
+    # pwd = "@lovehyy123456"
     # bot = Zkweb()
     # code = bot.checkCode()
     # # 验证码识别有误时 跳出本次循环 减少对登录接口的请求次数
 
     # if code == False:
     #     print("验证码识别(登陆前)错误!")
-    # main(userid)
+    # main(userid,pwd)
 
     # 多进程部分
     import multiprocessing
