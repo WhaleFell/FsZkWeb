@@ -1,0 +1,13 @@
+[Unit]
+Description=FsZkWeb
+After=network.target
+ 
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/FsZkWeb
+ExecStart=python3 -u /usr/bin/gunicorn -c gun.py main:app
+Restart=always
+User=pi
+
+[Install]
+WantedBy=default.target
