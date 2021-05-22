@@ -506,21 +506,25 @@ if __name__ == "__main__":
     result = input("运行模式选择:(默认/1.根据配置运行/2.全班禁止登录模式)")
     if str(result) == "2":
         classID = input(">输入班级id:")
+        # 多进程部分
+        import multiprocessing
+        pool = multiprocessing.Pool(processes=20)
+
         i = 0
         # 不间断循环
         while True:
             i += 1
             for userID in range(1, 52):
                 # print("2106051508%s%02d" % (classID,userID))
-                result = main("2106051508%s%02d" % (classID, userID))
-                if result == "Suc":
-                    # print("用户(%s)限制成功!")
-                    pass
+                pool.apply_async(func=main,
+                                 args=("2106051508%s%02d" %
+                                       (classID, userID), ))
 
+            # 新增班级多进程 故弃用配置重载。
             # 获取配置文件 间接实现热重载
-            UserList, checkTime = getConfig()
-            print("班级(%s)遍历模式！第%s次" % (classID, i))
-            time.sleep(checkTime)
+            # UserList, checkTime = getConfig()
+            # print("班级(%s)遍历模式！第%s次" % (classID, i))
+            # time.sleep(checkTime)
 
     else:
         # 根据配置文件针对某个人
