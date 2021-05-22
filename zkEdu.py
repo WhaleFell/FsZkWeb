@@ -503,9 +503,11 @@ if __name__ == "__main__":
         print("[Config]配置文件有误!请检查后重试", traceback.format_exc())
         sys.exit()
 
-    result = input("运行模式选择:(默认/1.根据配置运行/2.全班禁止登录模式)")
+    # result = input("运行模式选择:(默认/1.根据配置运行/2.全班禁止登录模式)")
+    result = "2"
     if str(result) == "2":
-        classID = input(">输入班级id:")
+        # classID = input(">输入班级id:")
+        classID = "06"
         # 多进程部分
         import multiprocessing
         pool = multiprocessing.Pool(processes=3)
@@ -516,10 +518,10 @@ if __name__ == "__main__":
         while True:
             i += 1
             for userID in range(1, 52):
-                
+
                 if (userID in whitelist) and (classID == "06"):
                     continue
-                
+
                 pool.apply_async(func=main,
                                  args=("2106051508%s%02d" %
                                        (classID, userID), ))
