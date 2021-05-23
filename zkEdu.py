@@ -510,14 +510,13 @@ if __name__ == "__main__":
         classID = "06"
         # 多进程部分
         import multiprocessing
-        pool = multiprocessing.Pool(processes=3)
+        pool = multiprocessing.Pool(processes=5)
         # 学号白名单
         whitelist = [16, 13]
         i = 0
-        # 不间断循环
+        # 不间断循环 更新一个算法 每段分段请求
         while True:
-            i += 1
-            for userID in range(1, 52):
+            for userID in range(1, 19):
 
                 if (userID in whitelist) and (classID == "06"):
                     continue
@@ -525,6 +524,16 @@ if __name__ == "__main__":
                 pool.apply_async(func=main,
                                  args=("2106051508%s%02d" %
                                        (classID, userID), ))
+                time.sleep(0.5)
+                pool.apply_async(func=main,
+                                 args=("2106051508%s%02d" %
+                                       (classID, userID + 17), ))
+                time.sleep(0.5)
+                pool.apply_async(func=main,
+                                 args=("2106051508%s%02d" %
+                                       (classID, userID + 33), ))
+                time.sleep(0.5)
+                
 
     else:
         # 根据配置文件针对某个人
