@@ -525,10 +525,12 @@ if __name__ == "__main__":
                                  args=("2106051508%s%02d" %
                                        (classID, userID), ))
                 time.sleep(0.5)
+
                 pool.apply_async(func=main,
                                  args=("2106051508%s%02d" %
                                        (classID, userID + 17), ))
                 time.sleep(0.5)
+
                 pool.apply_async(func=main,
                                  args=("2106051508%s%02d" %
                                        (classID, userID + 33), ))
