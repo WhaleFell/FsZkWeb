@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-04-04 12:06:40
+LastEditTime: 2021-07-10 22:12:05
 Description: 中考报名网站
 '''
 import base64
@@ -54,7 +54,7 @@ class Encrypt:
 # 从这里开始
 
 
-class Zkweb:
+class Zkweb(object):
 
     # 初始化各种属性
     def __init__(self):
@@ -153,6 +153,7 @@ class Zkweb:
 
     # 美化验证码3 个人感觉效果最好的方案了
     def dispose_code(self):
+        # 读取二进制图片
         img = Image.open(BytesIO(self.code))
 
         def binarizing(img, threshold):
