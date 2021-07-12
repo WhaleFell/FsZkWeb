@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-07-10 20:10:35
+LastEditTime: 2021-07-11 17:39:37
 Description: 中考报名网站请求方法库
 '''
 import base64
@@ -28,35 +28,35 @@ from lxml import etree
 from PIL import Image
 import traceback
 # import pymysql
+import pymongo
 
+class Encrypt(object):
+    '''
+    处理加密类
+    '''
 
-class Encrypt:
     def __init__(self):
-
-        # 加密的js文件
-
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                "EncryptJS.js"),
                   mode="r") as js:
             jsContent = js.read()
-
         self.ctx = execjs.compile(jsContent)
 
     def userid(self, userid):
-
+        '''传入账号,返回加密'''
         return self.ctx.call("encryptByDES", userid, "AGH123OL")
 
     def pwd(self, pwd):
-
+        '''传入密码,返回加密'''
         return self.ctx.call("hex_md5", pwd)
 
 
-# 从这里开始
-
-
-class Zkweb:
-
+class Zkweb(object):
+    '''
+    请求的类
+    '''
     # 初始化各种属性
+
     def __init__(self):
         self.header = {
             "User-Agent":
@@ -81,14 +81,18 @@ class Zkweb:
 
         self.code = None  # 验证码内容
         self.index_url = None
-        self.count = 0  # 失败计数
+        # self.count = 0  # 失败计数
+
+        self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+        mydb = self.myclient["zk"]
+        self.mycol = mydb["zk_student"]
+
 
     # 获取验证码地址
     def getCode(self):
         url = "https://exam.edu.foshan.gov.cn/iexamfs/KsLoginAction.action"
         try:
-            resp = self.sessions.get(url, headers=self.header)
-            # print(resp.text)
+            resp = self.sessions.get(url, headers=self.header, timeout=5)
             html = etree.HTML(resp.text)
             code = html.xpath(
                 "/html/body/form/table/tr/td[2]/table/tr[4]/td/table/tr/td/table/tr[3]/td[2]/img/@src"
@@ -98,40 +102,30 @@ class Zkweb:
             return code_url
         except Exception as e:
 
-            print("页面验证码获取失败 原因:")
-
-            try:
-                if "系统例行维护" in resp.text:
-                    print("中考报名系统晚上22:30至次日08:30暂停服务!")
-                    sys.exit()
-            except Exception as er:
-                print("错误信息:%s" % (er))
-                time.sleep(5)
-
-            return None
-
-        finally:
-            resp.close()
+            print("获取验证码地址时发送异常:", traceback.format_exc())
+            raise requests.ConnectionError
 
     # 下载验证码 返回二进制信息
     def downloadCode(self):
+        '''
+        下载验证码,返回二进制信息
+        '''
         code_url = self.getCode()
         if code_url == None:
             pass
         else:
             try:
-                resp = self.sessions.get(code_url, headers=self.header)
-
+                resp = self.sessions.get(
+                    code_url, headers=self.header, timeout=5)
                 # 验证码内容
                 self.code = resp.content
-
                 return True
             except Exception as e:
                 print("下载验证码失败! URL:%s" % (code_url))
-                return False
+                # return False
+                raise requests.ConnectionError
             finally:
                 resp.close()
-
     # 验证码识别部分
 
     def checkCode(self):
@@ -198,10 +192,10 @@ class Zkweb:
         # img.show()
         return img
 
-    # 登录部分 并获取主页
-    def login(self, code, userid,pwd="fb45cf48a07a7948bcd029c24c011720"):
+    # 登录部分
+    def login(self, code, userid, pwd="fb45cf48a07a7948bcd029c24c011720"):
         '''
-        传入账号,密码(可不传)
+        传入账号,密码(可不传),验证码
         '''
         url = "https://exam.edu.foshan.gov.cn/iexamfs/KsLoginSuccessAction.action"
 
@@ -210,17 +204,19 @@ class Zkweb:
             "userid": Encrypt().userid(userid),
             "login.logintype": "ks",
             # "keyvalue": Encrypt().pwd(pwd),
-            "keyvalue":pwd,
+            "keyvalue": pwd,
             "rand": code,
         }
 
         # print(data)
 
         try:
-            resp = self.sessions.post(url, data=data, headers=self.header)
+            resp = self.sessions.post(
+                url, data=data, headers=self.header, timeout=5)
         except:
             print("请求登录接口错误?")
-            return "apiError"
+            raise requests.ConnectionError
+            # return "apiError"
         finally:
             resp.close()
 
@@ -228,19 +224,15 @@ class Zkweb:
 
         # print(resp.text)
         if "输入的验证码错误" in resp.text:
-            print("验证码识别有误:%s" % (code))
+            # print("验证码识别有误:%s" % (code))
             return False
 
         # 可能账号密码不存在之类的
         elif "[规则]登录失败！" in resp.text:
 
             print("%s登录受限!" % (userid))
-            self.count += 1
-            if self.count >= 10:
-                print("账户(%s)可能被限制超过10次 请换ip" % (userid))
-                return "resqError"
 
-            return False
+            return "LoginError"
 
         elif "登录失败，请核对您的用户名和密码！" in resp.text:
             print("账号(%s)密码(%s)有误!" % (userid, pwd))
@@ -252,32 +244,54 @@ class Zkweb:
 
         else:
             print("可能登录成功?")
+    def writeMongoDB(self,id):
+        timestamp = int(time.time())
+        '''
+        储存账号锁定的时间.并更新各账号.
+        写入 monggoDB,传入id,自动生成时间戳.
+        {"_id":"账号,插入时随之更新time","time":锁定时间戳}
+        '''
+        try:
+            self.mycol.replace_one({"_id": id}, mydict, upsert=True)
 
-            try:
-                # 获取主页加密
+        except Exception as e:
+            print("写入MongoDB数据库出现问题", e)
+        finally:
+            self.myclient.close()
 
-                html = etree.HTML(resp.text)
-                # 更新获取主页 2021.4.4
-                self.index_url = html.xpath("/html/body/div[4]/a[1]/@href")[0]
-                print("主页链接:%s" % (self.index_url))
-                return True
+    def main(self,id):
+        count = 0  # 计数器
+        try:
+            bot = Zkweb()
+            code = bot.checkCode()
+            if code == False:
+                # print("id:%s验证码为空!" % (id))
+                self.main(id)
+            result = bot.login(code, id)
+            if result == False:
+                # print("%s验证码识别错误%s" % (id, code))
+                self.main(id)
+            if result == "PwdError":
+                count += 1
+                self.main(id)
+            if result == "Locking":
+                if count == 0:
+                    # 第一次请求就锁定的账号入第一次就锁定库
+                    print("账号%s第一次请求就锁定" % (id))
+                    id_queue.put(id)
 
-            except:
-                print("获取主页链接失败", resp.text)
-                with open(os.path.join(
-                        os.path.abspath(os.path.dirname(__file__)),
-                        "error//%s %s.html" %
-                    (userid, time.strftime("%H-%M-%S", time.localtime()))),
-                          mode="w",
-                          encoding="gb2312") as f:
-
-                    f.write(resp.text)
-
-                    print("错误主页%s已下载" % (userid))
-
-                return "Error"
-
+                    return "oneLock"
+                    # return
+                # 账号成功锁定,写入数据库
+                self.writeMongoDB(id)
+                return
+            else:
+                return
+        except Exception as e:
+            print("[INFO]发生异常别怕,递归直至成功", e)
+            self.main(id)
 
 if __name__ == "__main__":
-    
-    print(Encrypt().pwd("@123456Aa"))
+
+    # print(Encrypt().pwd("@123456Aa"))
+    Zkweb().getCode()
