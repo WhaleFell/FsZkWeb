@@ -3,7 +3,7 @@
 '''
 Author: whalefall
 Date: 2021-07-10 12:29:45
-LastEditTime: 2021-07-12 09:08:08
+LastEditTime: 2021-07-12 09:28:07
 Description: (放在笔记本上执行)
 Todo: 针对306班全体学生的账号锁定.黑化了黑化了,反正又考不上重点高中,早点进局子.
 命运是对我多么不公,寒窗苦读9年,认真上课写作业,中考前却抑郁症复发,躯体化严重,上天给我开了一个大玩笑.
@@ -58,7 +58,7 @@ def main(id):
 
 def put_new_id():
     new_id = locking_id.get()
-    time.sleep(30)
+    time.sleep(3)
     print("添加新账号!%s" % (new_id))
     id_queue.put(new_id)
 
@@ -78,9 +78,8 @@ if __name__ == "__main__":
 
     # 尽力去锁定6班...对不起了班长,对不起了大家,
     # 是不是我死了你们才开心???
-    for std_id in range(1, 52):
-        if std_id == 13:
-            continue
+    std_idList=[619,604,635,611,650]
+    for std_id in std_idList:
         id = "2106051508%02d%02d" % (6, std_id)
         id_queue.put(id)
 
