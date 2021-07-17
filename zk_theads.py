@@ -3,7 +3,7 @@
 '''
 Author: whalefall
 Date: 2021-07-10 12:29:45
-LastEditTime: 2021-07-12 00:58:15
+LastEditTime: 2021-07-12 11:40:21
 Description: 多线程+队列版本 (放在旧的PC上执行)
 Todo: 1. 官网策略: 账号密码错误5次锁定账号5分钟.
     2. 思路: 1)开一个进程池,接收验证码队列,并返回识别到的验证码.(看情况实现)
@@ -65,7 +65,7 @@ def checkTimeoutId():
                     # 忽略 running 中的账号
                     # print("账号%s运行中" % (id))
                     continue
-                if int(time.time()) - int(timestamp) >= 302:
+                if int(time.time()) - int(timestamp) >= 30:
                     id_queue.put(id, timeout=2)
                     # 并将数据库中的时间戳设置成运作中
                     mycol.replace_one({"_id": id}, {
@@ -100,7 +100,7 @@ def main(id):
         if result == "Locking":
             # 账号成功锁定,写入数据库
             writeMongoDB(id)
-            id_queue.task_done()
+            # id_queue.task_done()
             return
         else:
             return
@@ -121,12 +121,11 @@ if __name__ == "__main__":
     check_thread.start()
 
     # 仅仅锁定住宿班,降低系统负载
-    for class_id in range(6, 12):
-        for std_id in range(1, 51):
-            if class_id == 6 and std_id == 13:
-                continue
-            id = "2106051508%02d%02d" % (class_id, std_id)
-            id_queue.put(id)
+    for std_id in range(1, 51):
+        if std_id == 13:
+            continue
+        id = "2106051508%02d%02d" % (6, std_id)
+        id_queue.put(id)
 
     # 开进程池处理看看
     with ThreadPoolExecutor() as pool:

@@ -1,7 +1,7 @@
 '''
 Author: whalefall
 Date: 2021-03-20 16:37:34
-LastEditTime: 2021-07-11 17:39:37
+LastEditTime: 2021-07-12 09:52:51
 Description: 中考报名网站请求方法库
 '''
 import base64
@@ -92,7 +92,7 @@ class Zkweb(object):
     def getCode(self):
         url = "https://exam.edu.foshan.gov.cn/iexamfs/KsLoginAction.action"
         try:
-            resp = self.sessions.get(url, headers=self.header, timeout=5)
+            resp = self.sessions.get(url, headers=self.header, timeout=14)
             html = etree.HTML(resp.text)
             code = html.xpath(
                 "/html/body/form/table/tr/td[2]/table/tr[4]/td/table/tr/td/table/tr[3]/td[2]/img/@src"
@@ -116,7 +116,7 @@ class Zkweb(object):
         else:
             try:
                 resp = self.sessions.get(
-                    code_url, headers=self.header, timeout=5)
+                    code_url, headers=self.header, timeout=14)
                 # 验证码内容
                 self.code = resp.content
                 return True
@@ -212,7 +212,7 @@ class Zkweb(object):
 
         try:
             resp = self.sessions.post(
-                url, data=data, headers=self.header, timeout=5)
+                url, data=data, headers=self.header, timeout=14)
         except:
             print("请求登录接口错误?")
             raise requests.ConnectionError
